@@ -645,3 +645,4 @@ def md5_file_folder(base_dir):
 
 if __name__ == "__main__":
     main()
+    
