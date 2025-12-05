@@ -176,8 +176,11 @@ void runMainApp(bool startService) async {
     }
     windowManager.setOpacity(1);
     windowManager.setTitle(getWindowName());
-    // Do not use `windowManager.setResizable()` here.
-    setResizable(!bind.isIncomingOnly());
+    // Garantir que a janela não seja redimensionável nem maximizável
+    await windowManager.setSize(Size(520, 700));
+    await windowManager.setResizable(false);
+    await windowManager.setMaximizable(false);
+    await windowManager.setMinimizable(true);
   });
 }
 
