@@ -112,6 +112,10 @@ Future<void> main(List<String> args) async {
     desktopType = DesktopType.main;
     await windowManager.ensureInitialized();
     windowManager.setPreventClose(true);
+    // Configurar janela com tamanho fixo
+    await windowManager.setSize(Size(520, 700));
+    await windowManager.setResizable(false);
+    await windowManager.setMaximizable(false);
     if (isMacOS) {
       disableWindowMovable(kWindowId);
     }
