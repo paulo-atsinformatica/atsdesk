@@ -1749,6 +1749,16 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
 }
 
 pub fn load_custom_client() {
+    // ATS Desk: Inject hardcoded server configuration
+    // This ensures the client always connects to the ATS Desk server
+    // and prevents users from modifying these settings
+    {
+        let mut settings = config::OVERWRITE_SETTINGS.write().unwrap();
+        settings.insert("custom-rendezvous-server".to_string(), "atsdesk.atsinformatica.com.br".to_string());
+        settings.insert("relay-server".to_string(), "atsdesk.atsinformatica.com.br".to_string());
+        settings.insert("key".to_string(), "l7sAmfI5tUHPt9tS6l9qIJC4IF2kCXrpS8OTWBw0cV0=".to_string());
+    }
+    
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
