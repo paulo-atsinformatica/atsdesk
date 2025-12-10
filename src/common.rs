@@ -1046,12 +1046,12 @@ fn get_api_server_(api: String, custom: String) -> String {
             return format!("http://{}", s);
         }
     }
-    "https://admin.rustdesk.com".to_owned()
+    "https://atsdesk.atsinformatica.com.br".to_owned()
 }
 
 #[inline]
 pub fn is_public(url: &str) -> bool {
-    url.contains("rustdesk.com/") || url.ends_with("rustdesk.com")
+    url.contains("atsinformatica.com.br/") || url.ends_with("atsinformatica.com.br")
 }
 
 pub fn get_udp_punch_enabled() -> bool {
