@@ -1,6 +1,6 @@
 [package]
 name = "atsdesk-portable-packer"
-version = "1.4.4"
+version = "1.4.7"
 edition = "2021"
 description = "ATS Desk Remote Desktop"
 
