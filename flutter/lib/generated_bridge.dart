@@ -13,11 +13,53 @@ import 'dart:ffi' as ffi;
 
 part 'generated_bridge.freezed.dart';
 
-abstract class Rustdesk {
+abstract class Atsdesk {
   Stream<String> startGlobalEventStream(
       {required String appType, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kStartGlobalEventStreamConstMeta;
+
+  Future<bool> firebaseIsAuthenticated({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseIsAuthenticatedConstMeta;
+
+  Future<String> firebaseSignIn(
+      {required String email, required String password, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseSignInConstMeta;
+
+  Future<String> firebaseLogout({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseLogoutConstMeta;
+
+  Future<String> firebaseStartSession(
+      {required String sessionId,
+      required String machineId,
+      required String attendantMachineId,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseStartSessionConstMeta;
+
+  Future<String> firebaseUpdatePeerInfo(
+      {required String sessionId,
+      required String platform,
+      required String username,
+      required String hostname,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseUpdatePeerInfoConstMeta;
+
+  Future<String> firebaseAddChatMessage(
+      {required String sessionId,
+      required String sender,
+      required String text,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseAddChatMessageConstMeta;
+
+  Future<String> firebaseEndSession({required String sessionId, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseEndSessionConstMeta;
 
   Future<void> stopGlobalEventStream({required String appType, dynamic hint});
 
@@ -1672,15 +1714,15 @@ sealed class EventToUI with _$EventToUI {
   ) = EventToUI_Texture;
 }
 
-class RustdeskImpl implements Rustdesk {
-  final RustdeskPlatform _platform;
-  factory RustdeskImpl(ExternalLibrary dylib) =>
-      RustdeskImpl.raw(RustdeskPlatform(dylib));
+class AtsdeskImpl implements Atsdesk {
+  final AtsdeskPlatform _platform;
+  factory AtsdeskImpl(ExternalLibrary dylib) =>
+      AtsdeskImpl.raw(AtsdeskPlatform(dylib));
 
   /// Only valid on web/WASM platforms.
-  factory RustdeskImpl.wasm(FutureOr<WasmModule> module) =>
-      RustdeskImpl(module as ExternalLibrary);
-  RustdeskImpl.raw(this._platform);
+  factory AtsdeskImpl.wasm(FutureOr<WasmModule> module) =>
+      AtsdeskImpl(module as ExternalLibrary);
+  AtsdeskImpl.raw(this._platform);
   Stream<String> startGlobalEventStream(
       {required String appType, dynamic hint}) {
     var arg0 = _platform.api2wire_String(appType);
@@ -1698,6 +1740,150 @@ class RustdeskImpl implements Rustdesk {
       const FlutterRustBridgeTaskConstMeta(
         debugName: "start_global_event_stream",
         argNames: ["appType"],
+      );
+
+  Future<bool> firebaseIsAuthenticated({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_firebase_is_authenticated(port_),
+      parseSuccessData: _wire2api_bool,
+      constMeta: kFirebaseIsAuthenticatedConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseIsAuthenticatedConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "firebase_is_authenticated",
+        argNames: [],
+      );
+
+  Future<String> firebaseSignIn(
+      {required String email, required String password, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(email);
+    var arg1 = _platform.api2wire_String(password);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_firebase_sign_in(port_, arg0, arg1),
+      parseSuccessData: _wire2api_String,
+      constMeta: kFirebaseSignInConstMeta,
+      argValues: [email, password],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseSignInConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "firebase_sign_in",
+        argNames: ["email", "password"],
+      );
+
+  Future<String> firebaseLogout({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_firebase_logout(port_),
+      parseSuccessData: _wire2api_String,
+      constMeta: kFirebaseLogoutConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseLogoutConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "firebase_logout",
+        argNames: [],
+      );
+
+  Future<String> firebaseStartSession(
+      {required String sessionId,
+      required String machineId,
+      required String attendantMachineId,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_String(sessionId);
+    var arg1 = _platform.api2wire_String(machineId);
+    var arg2 = _platform.api2wire_String(attendantMachineId);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_firebase_start_session(port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_String,
+      constMeta: kFirebaseStartSessionConstMeta,
+      argValues: [sessionId, machineId, attendantMachineId],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseStartSessionConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "firebase_start_session",
+        argNames: ["sessionId", "machineId", "attendantMachineId"],
+      );
+
+  Future<String> firebaseUpdatePeerInfo(
+      {required String sessionId,
+      required String platform,
+      required String username,
+      required String hostname,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_String(sessionId);
+    var arg1 = _platform.api2wire_String(platform);
+    var arg2 = _platform.api2wire_String(username);
+    var arg3 = _platform.api2wire_String(hostname);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_firebase_update_peer_info(port_, arg0, arg1, arg2, arg3),
+      parseSuccessData: _wire2api_String,
+      constMeta: kFirebaseUpdatePeerInfoConstMeta,
+      argValues: [sessionId, platform, username, hostname],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseUpdatePeerInfoConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "firebase_update_peer_info",
+        argNames: ["sessionId", "platform", "username", "hostname"],
+      );
+
+  Future<String> firebaseAddChatMessage(
+      {required String sessionId,
+      required String sender,
+      required String text,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_String(sessionId);
+    var arg1 = _platform.api2wire_String(sender);
+    var arg2 = _platform.api2wire_String(text);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_firebase_add_chat_message(port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_String,
+      constMeta: kFirebaseAddChatMessageConstMeta,
+      argValues: [sessionId, sender, text],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseAddChatMessageConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "firebase_add_chat_message",
+        argNames: ["sessionId", "sender", "text"],
+      );
+
+  Future<String> firebaseEndSession({required String sessionId, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(sessionId);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_firebase_end_session(port_, arg0),
+      parseSuccessData: _wire2api_String,
+      constMeta: kFirebaseEndSessionConstMeta,
+      argValues: [sessionId],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFirebaseEndSessionConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "firebase_end_session",
+        argNames: ["sessionId"],
       );
 
   Future<void> stopGlobalEventStream({required String appType, dynamic hint}) {
@@ -7994,8 +8180,8 @@ int api2wire_usize(int raw) {
 }
 // Section: finalizer
 
-class RustdeskPlatform extends FlutterRustBridgeBase<RustdeskWire> {
-  RustdeskPlatform(ffi.DynamicLibrary dylib) : super(RustdeskWire(dylib));
+class AtsdeskPlatform extends FlutterRustBridgeBase<AtsdeskWire> {
+  AtsdeskPlatform(ffi.DynamicLibrary dylib) : super(AtsdeskWire(dylib));
 
 // Section: api2wire
 
@@ -8055,7 +8241,7 @@ class RustdeskPlatform extends FlutterRustBridgeBase<RustdeskWire> {
 // ignore_for_file: type=lint
 
 /// generated by flutter_rust_bridge
-class RustdeskWire implements FlutterRustBridgeWireBase {
+class AtsdeskWire implements FlutterRustBridgeWireBase {
   @internal
   late final dartApi = DartApiDl(init_frb_dart_api_dl);
 
@@ -8064,11 +8250,11 @@ class RustdeskWire implements FlutterRustBridgeWireBase {
       _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
-  RustdeskWire(ffi.DynamicLibrary dynamicLibrary)
+  AtsdeskWire(ffi.DynamicLibrary dynamicLibrary)
       : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
-  RustdeskWire.fromLookup(
+  AtsdeskWire.fromLookup(
       ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
           lookup)
       : _lookup = lookup;
@@ -8160,6 +8346,158 @@ class RustdeskWire implements FlutterRustBridgeWireBase {
   late final _wire_start_global_event_stream =
       _wire_start_global_event_streamPtr
           .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_firebase_is_authenticated(
+    int port_,
+  ) {
+    return _wire_firebase_is_authenticated(
+      port_,
+    );
+  }
+
+  late final _wire_firebase_is_authenticatedPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_firebase_is_authenticated');
+  late final _wire_firebase_is_authenticated =
+      _wire_firebase_is_authenticatedPtr.asFunction<void Function(int)>();
+
+  void wire_firebase_sign_in(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> email,
+    ffi.Pointer<wire_uint_8_list> password,
+  ) {
+    return _wire_firebase_sign_in(
+      port_,
+      email,
+      password,
+    );
+  }
+
+  late final _wire_firebase_sign_inPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_firebase_sign_in');
+  late final _wire_firebase_sign_in = _wire_firebase_sign_inPtr.asFunction<
+      void Function(
+          int, ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_firebase_logout(
+    int port_,
+  ) {
+    return _wire_firebase_logout(
+      port_,
+    );
+  }
+
+  late final _wire_firebase_logoutPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_firebase_logout');
+  late final _wire_firebase_logout =
+      _wire_firebase_logoutPtr.asFunction<void Function(int)>();
+
+  void wire_firebase_start_session(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> session_id,
+    ffi.Pointer<wire_uint_8_list> machine_id,
+    ffi.Pointer<wire_uint_8_list> attendant_machine_id,
+  ) {
+    return _wire_firebase_start_session(
+      port_,
+      session_id,
+      machine_id,
+      attendant_machine_id,
+    );
+  }
+
+  late final _wire_firebase_start_sessionPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_firebase_start_session');
+  late final _wire_firebase_start_session =
+      _wire_firebase_start_sessionPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_firebase_update_peer_info(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> session_id,
+    ffi.Pointer<wire_uint_8_list> platform,
+    ffi.Pointer<wire_uint_8_list> username,
+    ffi.Pointer<wire_uint_8_list> hostname,
+  ) {
+    return _wire_firebase_update_peer_info(
+      port_,
+      session_id,
+      platform,
+      username,
+      hostname,
+    );
+  }
+
+  late final _wire_firebase_update_peer_infoPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_firebase_update_peer_info');
+  late final _wire_firebase_update_peer_info =
+      _wire_firebase_update_peer_infoPtr.asFunction<
+          void Function(
+              int,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_firebase_add_chat_message(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> session_id,
+    ffi.Pointer<wire_uint_8_list> sender,
+    ffi.Pointer<wire_uint_8_list> text,
+  ) {
+    return _wire_firebase_add_chat_message(
+      port_,
+      session_id,
+      sender,
+      text,
+    );
+  }
+
+  late final _wire_firebase_add_chat_messagePtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_firebase_add_chat_message');
+  late final _wire_firebase_add_chat_message =
+      _wire_firebase_add_chat_messagePtr.asFunction<
+          void Function(int, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_firebase_end_session(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> session_id,
+  ) {
+    return _wire_firebase_end_session(
+      port_,
+      session_id,
+    );
+  }
+
+  late final _wire_firebase_end_sessionPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_firebase_end_session');
+  late final _wire_firebase_end_session = _wire_firebase_end_sessionPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_stop_global_event_stream(
     int port_,

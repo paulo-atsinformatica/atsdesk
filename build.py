@@ -442,12 +442,13 @@ def build_flutter_windows(version, features, skip_portable_pack):
     os.chdir('..')
     shutil.copy2('target/release/deps/dylib_virtual_display.dll',
                  flutter_build_dir_2)
+
     if skip_portable_pack:
         return
     os.chdir('libs/portable')
     system2('pip3 install -r requirements.txt')
     system2(
-        f'python3 ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/atsdesk.exe')
+        f'python ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/atsdesk.exe')
     os.chdir('../..')
     if os.path.exists('./atsdesk_portable.exe'):
         os.replace('./target/release/atsdesk-portable-packer.exe',
@@ -511,7 +512,7 @@ def main():
         os.chdir('libs/portable')
         system2('pip3 install -r requirements.txt')
         system2(
-            f'python3 ./generate.py -f ../../{res_dir} -o . -e ../../{res_dir}/atsdesk-{version}-win7-install.exe')
+            f'python ./generate.py -f ../../{res_dir} -o . -e ../../{res_dir}/atsdesk-{version}-win7-install.exe')
         system2('mv ../../{res_dir}/atsdesk-{version}-win7-install.exe ../..')
     elif os.path.isfile('/usr/bin/pacman'):
         # pacman -S -needed base-devel

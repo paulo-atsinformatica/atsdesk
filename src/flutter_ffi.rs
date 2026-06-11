@@ -88,6 +88,50 @@ pub fn start_global_event_stream(s: StreamSink<String>, app_type: String) -> Res
     super::flutter::start_global_event_stream(s, app_type)
 }
 
+// Firebase removed. These are no-op stubs kept only so the generated FFI
+// bridge (flutter/lib/generated_bridge.dart) still resolves its symbols.
+// Flutter call sites become harmless no-ops.
+pub fn firebase_is_authenticated() -> bool {
+    false
+}
+
+pub fn firebase_sign_in(_email: String, _password: String) -> String {
+    String::new()
+}
+
+pub fn firebase_logout() -> String {
+    String::new()
+}
+
+pub fn firebase_start_session(
+    _session_id: String,
+    _machine_id: String,
+    _attendant_machine_id: String,
+) -> String {
+    String::new()
+}
+
+pub fn firebase_update_peer_info(
+    _session_id: String,
+    _platform: String,
+    _username: String,
+    _hostname: String,
+) -> String {
+    String::new()
+}
+
+pub fn firebase_add_chat_message(
+    _session_id: String,
+    _sender: String,
+    _text: String,
+) -> String {
+    String::new()
+}
+
+pub fn firebase_end_session(_session_id: String) -> String {
+    String::new()
+}
+
 #[inline]
 pub fn stop_global_event_stream(app_type: String) {
     super::flutter::stop_global_event_stream(app_type)

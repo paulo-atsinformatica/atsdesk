@@ -55,3 +55,8 @@ vcpkg_installed
 flutter/lib/generated_plugin_registrant.dart
 libsciter.dylib
 flutter/web/
+# Firebase secrets / local config — do NOT commit
+.env
+config.toml
+/data/
+vcpkg/
