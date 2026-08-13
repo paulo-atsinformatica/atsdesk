@@ -560,6 +560,13 @@ fn run(vs: VideoService) -> ResultType<()> {
     #[cfg(not(windows))]
     let last_portable_service_running = false;
 
+    // ATS Desk: mirrors the condition `portable_service::client::create_capturer()`
+    // uses to pick the shared memory capturer, so the loop below can tell when the
+    // capturer no longer matches the desktop it was built for.
+    #[cfg(windows)]
+    let capturer_on_secure_desktop =
+        last_portable_service_running && crate::platform::windows::desktop_changed();
+
     let display_idx = vs.idx;
     let sp = vs.sp;
     let mut c = get_capturer(vs.source, display_idx, last_portable_service_running)?;
@@ -699,9 +706,16 @@ fn run(vs: VideoService) -> ResultType<()> {
         }
         #[cfg(windows)]
         {
-            if crate::platform::windows::desktop_changed()
-                && !crate::portable_service::client::running()
-            {
+            let desktop_changed = crate::platform::windows::desktop_changed();
+            if crate::portable_service::client::running() {
+                // ATS Desk: with the portable service up, the capturer kind depends on
+                // whether the secure desktop is active, so it has to be rebuilt on both
+                // transitions: entering the UAC prompt and leaving it.
+                if desktop_changed != capturer_on_secure_desktop {
+                    log::info!("secure desktop active: {}, recreate capturer", desktop_changed);
+                    bail!("Desktop changed");
+                }
+            } else if desktop_changed {
                 bail!("Desktop changed");
             }
         }
