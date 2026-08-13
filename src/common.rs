@@ -2091,7 +2091,20 @@ pub fn load_custom_client() {
         settings.insert("relay-server".to_string(), "atsdesk.atsinformatica.com.br".to_string());
         settings.insert("key".to_string(), "l7sAmfI5tUHPt9tS6l9qIJC4IF2kCXrpS8OTWBw0cV0=".to_string());
     }
-    
+
+    // ATS Desk: open every remote desktop session in its own window instead of
+    // stacking them as tabs. `enable-` options default to on when unset, so the
+    // default has to be spelled out as "N" here. This is a default and not an
+    // overwrite, so the operator can still switch back in Settings.
+    // Key mirrors `kOptionOpenNewConnInTabs` in flutter/lib/consts.dart.
+    {
+        let mut local = config::DEFAULT_LOCAL_SETTINGS.write().unwrap();
+        local.insert(
+            "enable-open-new-connections-in-tabs".to_string(),
+            "N".to_string(),
+        );
+    }
+
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
