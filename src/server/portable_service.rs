@@ -1517,17 +1517,21 @@ pub mod client {
         if portable_service_running != RUNNING.lock().unwrap().clone() {
             log::info!("portable service status mismatch");
         }
-        // DISABLED: Portable service shared memory capturer causes issues with primary display
-        // Always use direct DXGI/GDI capturer for better compatibility
-        // if portable_service_running && display.is_primary() {
-        //     log::info!("Create shared memory capturer");
-        //     return Ok(Box::new(CapturerPortable::new(current_display)));
-        // } else {
-            log::debug!("Create capturer dxgi|gdi");
-            return Ok(Box::new(
-                Capturer::new(display).with_context(|| "Failed to create capturer")?,
-            ));
-        // }
+        // ATS Desk: the shared memory capturer is the only way to see the Windows
+        // secure desktop (UAC prompt, Ctrl+Alt+Del) when running portable, because
+        // this process holds a user token and cannot select the Winlogon desktop.
+        // Upstream gates it on `display.is_primary()`, which routed the primary
+        // display through shared memory at all times and broke capture on multi
+        // monitor machines. Gate it on the secure desktop being active instead, so
+        // normal capture keeps using DXGI/GDI directly on every display.
+        if portable_service_running && crate::platform::windows::desktop_changed() {
+            log::info!("Create shared memory capturer, secure desktop is active");
+            return Ok(Box::new(CapturerPortable::new(current_display)));
+        }
+        log::debug!("Create capturer dxgi|gdi");
+        return Ok(Box::new(
+            Capturer::new(display).with_context(|| "Failed to create capturer")?,
+        ));
     }
 
     pub fn get_cursor_info(pci: PCURSORINFO) -> BOOL {
