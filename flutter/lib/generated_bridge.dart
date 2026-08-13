@@ -788,6 +788,15 @@ abstract class Atsdesk {
 
   FlutterRustBridgeTaskConstMeta get kMainGetApiServerConstMeta;
 
+  Future<String> mainDeployDevice(
+      {required String token, required String id, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kMainDeployDeviceConstMeta;
+
+  String mainResolveAvatarUrl({required String avatar, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kMainResolveAvatarUrlConstMeta;
+
   Future<void> mainHttpRequest(
       {required String url,
       required String method,
@@ -832,6 +841,45 @@ abstract class Atsdesk {
       {required UuidValue sessionId, required String value, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kMainSetInputSourceConstMeta;
+
+  /// Set cursor position (for pointer lock re-centering).
+  ///
+  /// # Returns
+  /// - `true`: cursor position was successfully set
+  /// - `false`: operation failed or not supported
+  ///
+  /// # Platform behavior
+  /// - Windows/macOS/Linux: attempts to move the cursor to (x, y)
+  /// - Android/iOS: no-op, always returns `false`
+  bool mainSetCursorPosition({required int x, required int y, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kMainSetCursorPositionConstMeta;
+
+  /// Clip cursor to a rectangle (for pointer lock).
+  ///
+  /// When `enable` is true, the cursor is clipped to the rectangle defined by
+  /// `left`, `top`, `right`, `bottom`. When `enable` is false, the rectangle
+  /// values are ignored and the cursor is unclipped.
+  ///
+  /// # Returns
+  /// - `true`: operation succeeded or no-op completed
+  /// - `false`: operation failed
+  ///
+  /// # Platform behavior
+  /// - Windows: uses ClipCursor API to confine cursor to the specified rectangle
+  /// - macOS: uses CGAssociateMouseAndMouseCursorPosition for pointer lock effect;
+  ///   the rect coordinates are ignored (only Some/None matters)
+  /// - Linux: no-op, always returns `true`; use pointer warping for similar effect
+  /// - Android/iOS: no-op, always returns `false`
+  bool mainClipCursor(
+      {required int left,
+      required int top,
+      required int right,
+      required int bottom,
+      required bool enable,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kMainClipCursorConstMeta;
 
   Future<String> mainGetMyId({dynamic hint});
 
@@ -1026,9 +1074,11 @@ abstract class Atsdesk {
 
   FlutterRustBridgeTaskConstMeta get kMainGetTemporaryPasswordConstMeta;
 
-  Future<String> mainGetPermanentPassword({dynamic hint});
+  Future<bool> mainSetPermanentPasswordWithResult(
+      {required String password, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kMainGetPermanentPasswordConstMeta;
+  FlutterRustBridgeTaskConstMeta
+      get kMainSetPermanentPasswordWithResultConstMeta;
 
   Future<String> mainGetFingerprint({dynamic hint});
 
@@ -1118,6 +1168,34 @@ abstract class Atsdesk {
 
   FlutterRustBridgeTaskConstMeta get kSessionSendPointerConstMeta;
 
+  /// Send mouse event from Flutter to the remote peer.
+  ///
+  /// # Relative Mouse Mode Message Contract
+  ///
+  /// When the message contains a `relative_mouse_mode` field, this function validates
+  /// and filters activation/deactivation markers.
+  ///
+  /// **Mode Authority:**
+  /// The Flutter InputModel is authoritative for relative mouse mode activation/deactivation.
+  /// The server (via `input_service.rs`) only consumes forwarded delta movements and tracks
+  /// relative movement processing state, but does NOT control mode activation/deactivation.
+  ///
+  /// **Deactivation Markers are Local-Only:**
+  /// Deactivation markers (`relative_mouse_mode: "0"`) are NEVER forwarded to the server.
+  /// They are handled entirely on the client side to reset local UI state (cursor visibility,
+  /// pointer lock, etc.). The server does not rely on deactivation markers and should not
+  /// expect to receive them.
+  ///
+  /// **Contract (Flutter side MUST adhere to):**
+  /// 1. `relative_mouse_mode` field is ONLY present on activation/deactivation marker messages,
+  ///    NEVER on normal pointer events (move, button, scroll).
+  /// 2. Deactivation marker: `{"relative_mouse_mode": "0"}` - local-only, never forwarded.
+  /// 3. Activation marker: `{"relative_mouse_mode": "1", "type": "move_relative", "x": "0", "y": "0"}`
+  ///    - MUST use `type="move_relative"` with `x="0"` and `y="0"` (safe no-op).
+  ///    - Any other combination is dropped to prevent accidental cursor movement.
+  ///
+  /// If these assumptions are violated (e.g., `relative_mouse_mode` is added to normal events),
+  /// legitimate mouse events may be silently dropped by the early-return logic below.
   Future<void> sessionSendMouse(
       {required UuidValue sessionId, required String msg, dynamic hint});
 
@@ -1207,11 +1285,6 @@ abstract class Atsdesk {
   Future<void> mainUpdateTemporaryPassword({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kMainUpdateTemporaryPasswordConstMeta;
-
-  Future<void> mainSetPermanentPassword(
-      {required String password, dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kMainSetPermanentPasswordConstMeta;
 
   Future<bool> mainCheckSuperUserPermission({dynamic hint});
 
@@ -4521,6 +4594,43 @@ class AtsdeskImpl implements Atsdesk {
         argNames: [],
       );
 
+  Future<String> mainDeployDevice(
+      {required String token, required String id, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(token);
+    var arg1 = _platform.api2wire_String(id);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_main_deploy_device(port_, arg0, arg1),
+      parseSuccessData: _wire2api_String,
+      constMeta: kMainDeployDeviceConstMeta,
+      argValues: [token, id],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kMainDeployDeviceConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "main_deploy_device",
+        argNames: ["token", "id"],
+      );
+
+  String mainResolveAvatarUrl({required String avatar, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(avatar);
+    return _platform.executeSync(FlutterRustBridgeSyncTask(
+      callFfi: () => _platform.inner.wire_main_resolve_avatar_url(arg0),
+      parseSuccessData: _wire2api_String,
+      constMeta: kMainResolveAvatarUrlConstMeta,
+      argValues: [avatar],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kMainResolveAvatarUrlConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "main_resolve_avatar_url",
+        argNames: ["avatar"],
+      );
+
   Future<void> mainHttpRequest(
       {required String url,
       required String method,
@@ -4690,6 +4800,52 @@ class AtsdeskImpl implements Atsdesk {
       const FlutterRustBridgeTaskConstMeta(
         debugName: "main_set_input_source",
         argNames: ["sessionId", "value"],
+      );
+
+  bool mainSetCursorPosition({required int x, required int y, dynamic hint}) {
+    var arg0 = api2wire_i32(x);
+    var arg1 = api2wire_i32(y);
+    return _platform.executeSync(FlutterRustBridgeSyncTask(
+      callFfi: () => _platform.inner.wire_main_set_cursor_position(arg0, arg1),
+      parseSuccessData: _wire2api_bool,
+      constMeta: kMainSetCursorPositionConstMeta,
+      argValues: [x, y],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kMainSetCursorPositionConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "main_set_cursor_position",
+        argNames: ["x", "y"],
+      );
+
+  bool mainClipCursor(
+      {required int left,
+      required int top,
+      required int right,
+      required int bottom,
+      required bool enable,
+      dynamic hint}) {
+    var arg0 = api2wire_i32(left);
+    var arg1 = api2wire_i32(top);
+    var arg2 = api2wire_i32(right);
+    var arg3 = api2wire_i32(bottom);
+    var arg4 = enable;
+    return _platform.executeSync(FlutterRustBridgeSyncTask(
+      callFfi: () =>
+          _platform.inner.wire_main_clip_cursor(arg0, arg1, arg2, arg3, arg4),
+      parseSuccessData: _wire2api_bool,
+      constMeta: kMainClipCursorConstMeta,
+      argValues: [left, top, right, bottom, enable],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kMainClipCursorConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "main_clip_cursor",
+        argNames: ["left", "top", "right", "bottom", "enable"],
       );
 
   Future<String> mainGetMyId({dynamic hint}) {
@@ -5460,22 +5616,25 @@ class AtsdeskImpl implements Atsdesk {
         argNames: [],
       );
 
-  Future<String> mainGetPermanentPassword({dynamic hint}) {
+  Future<bool> mainSetPermanentPasswordWithResult(
+      {required String password, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(password);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_main_get_permanent_password(port_),
-      parseSuccessData: _wire2api_String,
-      constMeta: kMainGetPermanentPasswordConstMeta,
-      argValues: [],
+      callFfi: (port_) => _platform.inner
+          .wire_main_set_permanent_password_with_result(port_, arg0),
+      parseSuccessData: _wire2api_bool,
+      constMeta: kMainSetPermanentPasswordWithResultConstMeta,
+      argValues: [password],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kMainGetPermanentPasswordConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "main_get_permanent_password",
-        argNames: [],
-      );
+  FlutterRustBridgeTaskConstMeta
+      get kMainSetPermanentPasswordWithResultConstMeta =>
+          const FlutterRustBridgeTaskConstMeta(
+            debugName: "main_set_permanent_password_with_result",
+            argNames: ["password"],
+          );
 
   Future<String> mainGetFingerprint({dynamic hint}) {
     return _platform.executeNormal(FlutterRustBridgeTask(
@@ -6168,25 +6327,6 @@ class AtsdeskImpl implements Atsdesk {
       const FlutterRustBridgeTaskConstMeta(
         debugName: "main_update_temporary_password",
         argNames: [],
-      );
-
-  Future<void> mainSetPermanentPassword(
-      {required String password, dynamic hint}) {
-    var arg0 = _platform.api2wire_String(password);
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_main_set_permanent_password(port_, arg0),
-      parseSuccessData: _wire2api_unit,
-      constMeta: kMainSetPermanentPasswordConstMeta,
-      argValues: [password],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kMainSetPermanentPasswordConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "main_set_permanent_password",
-        argNames: ["password"],
       );
 
   Future<bool> mainCheckSuperUserPermission({dynamic hint}) {
@@ -8363,13 +8503,13 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
 
   void wire_firebase_sign_in(
     int port_,
-    ffi.Pointer<wire_uint_8_list> email,
-    ffi.Pointer<wire_uint_8_list> password,
+    ffi.Pointer<wire_uint_8_list> _email,
+    ffi.Pointer<wire_uint_8_list> _password,
   ) {
     return _wire_firebase_sign_in(
       port_,
-      email,
-      password,
+      _email,
+      _password,
     );
   }
 
@@ -8397,15 +8537,15 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
 
   void wire_firebase_start_session(
     int port_,
-    ffi.Pointer<wire_uint_8_list> session_id,
-    ffi.Pointer<wire_uint_8_list> machine_id,
-    ffi.Pointer<wire_uint_8_list> attendant_machine_id,
+    ffi.Pointer<wire_uint_8_list> _session_id,
+    ffi.Pointer<wire_uint_8_list> _machine_id,
+    ffi.Pointer<wire_uint_8_list> _attendant_machine_id,
   ) {
     return _wire_firebase_start_session(
       port_,
-      session_id,
-      machine_id,
-      attendant_machine_id,
+      _session_id,
+      _machine_id,
+      _attendant_machine_id,
     );
   }
 
@@ -8423,17 +8563,17 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
 
   void wire_firebase_update_peer_info(
     int port_,
-    ffi.Pointer<wire_uint_8_list> session_id,
-    ffi.Pointer<wire_uint_8_list> platform,
-    ffi.Pointer<wire_uint_8_list> username,
-    ffi.Pointer<wire_uint_8_list> hostname,
+    ffi.Pointer<wire_uint_8_list> _session_id,
+    ffi.Pointer<wire_uint_8_list> _platform,
+    ffi.Pointer<wire_uint_8_list> _username,
+    ffi.Pointer<wire_uint_8_list> _hostname,
   ) {
     return _wire_firebase_update_peer_info(
       port_,
-      session_id,
-      platform,
-      username,
-      hostname,
+      _session_id,
+      _platform,
+      _username,
+      _hostname,
     );
   }
 
@@ -8457,15 +8597,15 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
 
   void wire_firebase_add_chat_message(
     int port_,
-    ffi.Pointer<wire_uint_8_list> session_id,
-    ffi.Pointer<wire_uint_8_list> sender,
-    ffi.Pointer<wire_uint_8_list> text,
+    ffi.Pointer<wire_uint_8_list> _session_id,
+    ffi.Pointer<wire_uint_8_list> _sender,
+    ffi.Pointer<wire_uint_8_list> _text,
   ) {
     return _wire_firebase_add_chat_message(
       port_,
-      session_id,
-      sender,
-      text,
+      _session_id,
+      _sender,
+      _text,
     );
   }
 
@@ -8484,11 +8624,11 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
 
   void wire_firebase_end_session(
     int port_,
-    ffi.Pointer<wire_uint_8_list> session_id,
+    ffi.Pointer<wire_uint_8_list> _session_id,
   ) {
     return _wire_firebase_end_session(
       port_,
-      session_id,
+      _session_id,
     );
   }
 
@@ -11039,6 +11179,41 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
   late final _wire_main_get_api_server =
       _wire_main_get_api_serverPtr.asFunction<void Function(int)>();
 
+  void wire_main_deploy_device(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> token,
+    ffi.Pointer<wire_uint_8_list> id,
+  ) {
+    return _wire_main_deploy_device(
+      port_,
+      token,
+      id,
+    );
+  }
+
+  late final _wire_main_deploy_devicePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_main_deploy_device');
+  late final _wire_main_deploy_device = _wire_main_deploy_devicePtr.asFunction<
+      void Function(
+          int, ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
+
+  WireSyncReturn wire_main_resolve_avatar_url(
+    ffi.Pointer<wire_uint_8_list> avatar,
+  ) {
+    return _wire_main_resolve_avatar_url(
+      avatar,
+    );
+  }
+
+  late final _wire_main_resolve_avatar_urlPtr = _lookup<
+      ffi.NativeFunction<
+          WireSyncReturn Function(
+              ffi.Pointer<wire_uint_8_list>)>>('wire_main_resolve_avatar_url');
+  late final _wire_main_resolve_avatar_url = _wire_main_resolve_avatar_urlPtr
+      .asFunction<WireSyncReturn Function(ffi.Pointer<wire_uint_8_list>)>();
+
   void wire_main_http_request(
     int port_,
     ffi.Pointer<wire_uint_8_list> url,
@@ -11203,6 +11378,45 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
       _wire_main_set_input_sourcePtr.asFunction<
           void Function(int, ffi.Pointer<wire_uint_8_list>,
               ffi.Pointer<wire_uint_8_list>)>();
+
+  WireSyncReturn wire_main_set_cursor_position(
+    int x,
+    int y,
+  ) {
+    return _wire_main_set_cursor_position(
+      x,
+      y,
+    );
+  }
+
+  late final _wire_main_set_cursor_positionPtr = _lookup<
+          ffi.NativeFunction<WireSyncReturn Function(ffi.Int32, ffi.Int32)>>(
+      'wire_main_set_cursor_position');
+  late final _wire_main_set_cursor_position = _wire_main_set_cursor_positionPtr
+      .asFunction<WireSyncReturn Function(int, int)>();
+
+  WireSyncReturn wire_main_clip_cursor(
+    int left,
+    int top,
+    int right,
+    int bottom,
+    bool enable,
+  ) {
+    return _wire_main_clip_cursor(
+      left,
+      top,
+      right,
+      bottom,
+      enable,
+    );
+  }
+
+  late final _wire_main_clip_cursorPtr = _lookup<
+      ffi.NativeFunction<
+          WireSyncReturn Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Int32,
+              ffi.Bool)>>('wire_main_clip_cursor');
+  late final _wire_main_clip_cursor = _wire_main_clip_cursorPtr
+      .asFunction<WireSyncReturn Function(int, int, int, int, bool)>();
 
   void wire_main_get_my_id(
     int port_,
@@ -11929,19 +12143,23 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
   late final _wire_main_get_temporary_password =
       _wire_main_get_temporary_passwordPtr.asFunction<void Function(int)>();
 
-  void wire_main_get_permanent_password(
+  void wire_main_set_permanent_password_with_result(
     int port_,
+    ffi.Pointer<wire_uint_8_list> password,
   ) {
-    return _wire_main_get_permanent_password(
+    return _wire_main_set_permanent_password_with_result(
       port_,
+      password,
     );
   }
 
-  late final _wire_main_get_permanent_passwordPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_main_get_permanent_password');
-  late final _wire_main_get_permanent_password =
-      _wire_main_get_permanent_passwordPtr.asFunction<void Function(int)>();
+  late final _wire_main_set_permanent_password_with_resultPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_main_set_permanent_password_with_result');
+  late final _wire_main_set_permanent_password_with_result =
+      _wire_main_set_permanent_password_with_resultPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_main_get_fingerprint(
     int port_,
@@ -12576,24 +12794,6 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
           'wire_main_update_temporary_password');
   late final _wire_main_update_temporary_password =
       _wire_main_update_temporary_passwordPtr.asFunction<void Function(int)>();
-
-  void wire_main_set_permanent_password(
-    int port_,
-    ffi.Pointer<wire_uint_8_list> password,
-  ) {
-    return _wire_main_set_permanent_password(
-      port_,
-      password,
-    );
-  }
-
-  late final _wire_main_set_permanent_passwordPtr = _lookup<
-          ffi.NativeFunction<
-              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>(
-      'wire_main_set_permanent_password');
-  late final _wire_main_set_permanent_password =
-      _wire_main_set_permanent_passwordPtr
-          .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_main_check_super_user_permission(
     int port_,
@@ -14378,6 +14578,20 @@ class AtsdeskWire implements FlutterRustBridgeWireBase {
   late final _XFixesSetWindowShapeRegion =
       _XFixesSetWindowShapeRegionPtr.asFunction<
           void Function(ffi.Pointer<Display>, int, int, int, int, int)>();
+
+  bool MacSetPrivacyMode(
+    bool on1,
+  ) {
+    return _MacSetPrivacyMode(
+      on1,
+    );
+  }
+
+  late final _MacSetPrivacyModePtr =
+      _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Bool)>>(
+          'MacSetPrivacyMode');
+  late final _MacSetPrivacyMode =
+      _MacSetPrivacyModePtr.asFunction<bool Function(bool)>();
 }
 
 final class _Dart_Handle extends ffi.Opaque {}
